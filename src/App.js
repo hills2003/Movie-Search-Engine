@@ -1,79 +1,45 @@
-import React,{useState,useEffect} from "react";
-import "./index.css";
-import Todolist from "./Todolist";
-import InputTodo from "./InputTodo";
-import Axios from "axios";
-function App() {
-
-    const [it,setIt]=useState([]);
-    const [details,setDetails]=useState(
-      [{
-        id:1,
-        title:'hello',
-        completed:false,
-      },
-      {
-        id:2,
-        title:'Good morning',
-        completed:true,
-      },
-      {
-        id:3,
-        title:'how was your night',
-        completed:false,
-      }]
-    )
-    useEffect((e)=>{
-      Axios.get("https://jsonplaceholder.typicode.com/todos",{
-        params:{
-          _limit:8
-        }
-      }).then(data => setDetails(data.data))
-      .catch(err => console.log(err))
-    },[])
-  
-   const handleclick = (id)=>{
-     setDetails(
-       details.map((data)=>{
-         if(data.id === id){
-           data.completed = !data.completed
-         }
-         return data
-       })
-     )
-   }
-   console.log(details)
-
-   const Delete = (id)=>{
-       setDetails([...details.filter(bits=>bits.id != id)])
-       
-   }
-
-   const Adder=(value)=>{
-     if (value){
-     Axios.post("https://jsonplaceholder.typicode.com/todos",{
-       data:{
-         id:Math.round(Math.random() * 500),
-         title:value,
-         completed:false
-       }
-     }).then(msg=>setDetails([msg.data.data,...details]))
+import React,{useEffect , useState ,useContext} from 'react';
+import Header from "./Header";
+import All from "./All";
+import four from "./four.jpg";
+import {Switch} from "@material-ui/core";
+import Image from "./Image";
+import axios from 'axios';
+function App(props) {
+    const [valid,setValid]=useState(true);
+    const [value,setValue]=useState('');
+    const [list,setList]=useState([])
+    const callfetch=(e)=>{
+        e.preventDefault();
+        axios(`https://www.omdbapi.com/?apikey=55bbac2b&s=${value}`)
+        // .then(res=>res.json())
+        .then(respond=>setList(respond.data.Search))
+        .catch(err=>console.log(err))
     }
-    else{
-      alert('input field is empty')
-    }
-   }
+    return (
+        <>
+            <Header />
+            <div className="center">
+                <div className="input">
+                    <form onSubmit={callfetch}>
+                    <input type="text" value={value} onChange={(e)=>setValue(e.target.value)}placeholder="search any movie" /><input type="submit" value="search" />
+                
+                    </form>
+                </div>
 
-  return (
-    <>
-      <header className="header"> <p>Todo App</p></header>
-    <div className="centered">
-      <InputTodo Adder={Adder}/>
-         <Todolist Delete ={Delete} handleclick={handleclick} detail={details} />
-         
-    </div>
-    </>
-  );
+               <div className='toolbar'>
+               <input type='button' onClick={()=>setValid(true)} value='All' />
+               <input type='button' onClick={()=>setValid(false)} value='Images' />
+               </div>
+                
+                {valid ?
+                    <All list={list}/> : <Image imglist={list}/>
+
+                }
+                
+            </div>
+        </>
+    );
 }
 
 export default App;
